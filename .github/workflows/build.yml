@@ -30,8 +30,12 @@ jobs:
 
     - name: Build APK with Buildozer
       run: |
-        mkdir -p ~/.android && touch ~/.android/repositories.cfg
-        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+        # Tạo sẵn thư mục bản quyền và ghi đè mã Hash chấp nhận điều khoản của Google Android SDK
+        mkdir -p /home/runner/.buildozer/android/platform/android-sdk/licenses
+        echo -e "\n247c16e652354367b58838960428d54511779746" > /home/runner/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
+        echo -e "\n84831b9409646a918e30573bab4c9c91346d8abd" > /home/runner/.buildozer/android/platform/android-sdk/licenses/android-sdk-preview-license
+        
+        # Tiến hành đóng gói ứng dụng
         buildozer android debug
       env:
         ACCEPT_FDL_LICENSE: "y"
