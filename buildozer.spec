@@ -1,8 +1,9 @@
+[app]
 # (str) Title of your application
-title = My Application
+title = Rubiknote
 
 # (str) Package name
-package.name = myapp
+package.name =rubiknote
 
 # (str) Package domain (needed for android/ios packaging)
 package.domain = org.test
