@@ -30,12 +30,8 @@ jobs:
 
     - name: Build APK with Buildozer
       run: |
-        # Chấp nhận tất cả bản quyền của SDK có sẵn trên máy chủ GitHub
-        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
-        
-        # Ép Buildozer nhận diện đúng đường dẫn bộ SDK xịn của GitHub thay vì tự tải bản mới bị lỗi
-        export ANDROID_SDK_ROOT=$ANDROID_HOME
-        export ANDROID_NDK_ROOT=$ANDROID_NDK_LATEST_HOME
+        # Chấp nhận tất cả bản quyền của SDK gốc trên GitHub trước khi chạy
+        yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
         
         # Tiến hành đóng gói ứng dụng
         buildozer android debug
