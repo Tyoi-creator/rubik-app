@@ -28,8 +28,13 @@ jobs:
         pip install --upgrade pip
         pip install buildozer==1.5.0 cython==0.29.36 virtualenv
 
-    - name: Build APK with Buildozer
+     - name: Build APK with Buildozer
       run: |
+        # Lệnh thần thánh tự động đồng ý tất cả điều khoản bản quyền của Google Android SDK
+        mkdir -p ~/.android && touch ~/.android/repositories.cfg
+        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+        
+        # Chạy buildozer sau khi đã xong bản quyền
         buildozer android debug
       env:
         ACCEPT_FDL_LICENSE: "y"
