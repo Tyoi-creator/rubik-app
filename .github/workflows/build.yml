@@ -18,7 +18,6 @@ jobs:
       with:
         python-version: '3.10'
 
-    # Bước thiết lập Java 17 cực kỳ quan trọng để tương thích với API 34
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
@@ -28,21 +27,18 @@ jobs:
     - name: Install System Dependencies
       run: |
         sudo apt update
-        sudo apt install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libssl-dev cmake libffi-dev libgdbm-dev bluez libasound2-dev bsdmainutils
+        sudo apt install -y git zip unzip openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libssl-dev cmake libffi-dev libgdbm-dev bluez libasound2-dev bsdmainutils lld libtinfo5 g++
 
-    - name: Install Latest Buildozer and Cython
+    - name: Install Latest Buildozer and Modern Cython
       run: |
         python -m pip install --upgrade pip
-        pip install buildozer==1.6.0 cython==0.29.36 virtualenv
+        # Cài đặt phiên bản Cython mới để tương thích hoàn toàn cấu trúc hàm hệ thống
+        pip install buildozer==1.6.0 cython virtualenv
 
     - name: Build APK with Buildozer
       run: |
-        # Chấp nhận tất cả bản quyền của Android SDK hệ thống gốc trước
         yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
-        
         cd $GITHUB_WORKSPACE
-        
-        # Đút lệnh yes vào để tự động bấm Y nếu có cài thêm package gì
         yes y | buildozer android debug
       env:
         ACCEPT_FDL_LICENSE: "y"
