@@ -112,7 +112,7 @@ android.build_tools_version = 34.0.0
 #android.sdk = 20
 
 # (str) Android NDK version to use
-android.ndk = 28c
+android.ndk = 27c
 
 # (int) Android NDK API to use. This is the minimum API your app will support, it should usually match android.minapi.
 android.ndk_api = 21
@@ -121,7 +121,7 @@ android.ndk_api = 21
 #android.private_storage = True
 
 # (str) Android NDK directory (if empty, it will be automatically downloaded.)
-# android.ndk_path = /usr/local/lib/android/sdk/ndk/25.2.9519653
+android.ndk_path = /usr/local/lib/android/sdk/ndk/27.3.13750724
 
 # (str) Android SDK directory (if empty, it will be automatically downloaded.)
 # android.sdk_path = /usr/local/lib/android/sdk
@@ -404,7 +404,7 @@ ios.codesign.allowed = false
 [buildozer]
 
 # (int) Log level (0 = error only, 1 = info, 2 = debug (with command output))
-log_level = 1
+log_level = 2
 
 # (int) Display warning if buildozer is run as root (0 = False, 1 = True)
 warn_on_root = 1
