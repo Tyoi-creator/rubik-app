@@ -26,15 +26,15 @@ jobs:
     - name: Install Latest Buildozer and Cython
       run: |
         python -m pip install --upgrade pip
-        # Nâng cấp lên Buildozer 1.7.0 để tự sửa lỗi tìm sai đường dẫn sdkmanager
-        pip install buildozer==1.7.0 cython==0.29.36 virtualenv
+        # Hạ xuống bản 1.6.0 - Bản mới nhất thực tế trên hệ thống PyPI hiện tại
+        pip install buildozer==1.6.0 cython==0.29.36 virtualenv
 
     - name: Build APK with Buildozer
       run: |
         # Chấp nhận tất cả bản quyền của Android SDK hệ thống gốc trước
         yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
         
-        # Chạy trực tiếp buildozer, bản 1.7.0 sẽ tự xử lý mượt mà đoạn check SDK
+        # Chạy trực tiếp buildozer 1.6.0
         buildozer android debug
       env:
         ACCEPT_FDL_LICENSE: "y"
