@@ -1,54 +1,81 @@
-name: Build APK Rubik
+name: Build APK with Buildozer
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "master" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "master" ]
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-    - name: Set up Python 3.10
+    - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'temurin'
-        java-version: '17'
-
-    - name: Install System Dependencies
+    - name: Install system dependencies
       run: |
-        sudo apt update
-        sudo apt install -y git zip unzip openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libssl-dev cmake libffi-dev libgdbm-dev bluez libasound2-dev bsdmainutils lld libtinfo5 g++
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          ccache \
+          git \
+          libffi-dev \
+          libssl-dev \
+          libgstreamer1.0-dev \
+          gstreamer1.0-plugins-base \
+          gstreamer1.0-plugins-good \
+          libsqlite3-dev \
+          sqlite3 \
+          bzip2 \
+          libbz2-dev \
+          zlib1g-dev \
+          openssl \
+          libgdbm-dev \
+          libgdbm-compat-dev \
+          liblzma-dev \
+          libreadline-dev \
+          uuid-dev \
+          libncurses5-dev \
+          libncursesw5-dev \
+          unzip \
+          zip \
+          autoconf \
+          automake \
+          libtool \
+          pkg-config \
+          ant \
+          openjdk-17-jdk
 
-    - name: Install Latest Buildozer and Modern Cython
+    - name: Install Python build tools and Fix Cython
       run: |
         python -m pip install --upgrade pip
-        pip install buildozer==1.6.0 cython virtualenv
+        # Cài đặt phiên bản Cython < 3.0.0 để tránh lỗi biên dịch module pyjnius
+        pip install "Cython<3.0.0" wheel buildozer
 
     - name: Build APK with Buildozer
-      run: |
-        # Chấp nhận bản quyền toàn bộ SDK và NDK hệ thống
-        yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
-        cd $GITHUB_WORKSPACE
-        yes y | buildozer android debug
       env:
-        ACCEPT_FDL_LICENSE: "y"
-        GRADLE_OPTS: "-Dorg.gradle.welcome.provider.enabled=false"
-        # Ép biến môi trường toàn hệ thống trỏ chung về một mối
-        ANDROID_NDK_HOME: "/usr/local/lib/android/sdk/ndk/27.3.13750724"
-        ANDROID_NDK_ROOT: "/usr/local/lib/android/sdk/ndk/27.3.13750724"
+        # Chấp nhận thiết kế mới của Kivy nếu Buildozer yêu cầu
+        BUILDOZER_ALLOW_KIVY_NEW_DESIGN: 1
+      run: |
+        # 1. Chấp nhận các điều khoản bản quyền SDK hệ thống trước
+        yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
+        
+        # 2. Xóa các thư mục build dở dang/bị lỗi của pyjnius từ các lần chạy trước (nếu có cache)
+        rm -rf .buildozer/android/platform/build-arm64-v8a_armeabi-v7a/build/other_builds/pyjnius*
+        
+        # 3. Tiến hành tự động đồng ý bản quyền và thực hiện build APK
+        yes y | buildozer android debug
 
     - name: Upload APK Artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/artifacts@v4
       with:
-        name: Rubik-APK
-        path: "**/bin/*.apk"
+        name: network-apk
+        path: bin/*.apk
