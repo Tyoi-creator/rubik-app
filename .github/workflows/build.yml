@@ -21,7 +21,8 @@ jobs:
     - name: Install System Dependencies
       run: |
         sudo apt update
-        sudo apt install -y git zip unzip openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libssl-dev cmake libffi-dev libgdbm-dev bluez libasound2-dev bsdmainutils
+        # Cài thêm gói 'expect' để ép tự động nhấn Y ở mọi tình huống ngầm
+        sudo apt install -y git zip unzip openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libssl-dev cmake libffi-dev libgdbm-dev bluez libasound2-dev bsdmainutils expect
 
     - name: Install Buildozer and Cython
       run: |
@@ -30,11 +31,16 @@ jobs:
 
     - name: Build APK with Buildozer
       run: |
-        # Chấp nhận tất cả bản quyền của SDK gốc trên GitHub trước khi chạy
-        yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
-        
-        # Tiến hành đóng gói ứng dụng
-        buildozer android debug
+        # Dùng lệnh expect để tạo một vòng lặp tự động điền "y" và nhấn Enter bất cứ khi nào hệ thống đòi hỏi điều khoản bản quyền
+        expect -c "
+        set timeout -1
+        spawn buildozer android debug
+        expect {
+            \"*Accept? (y/N)*\" { send \"y\r\"; exp_continue }
+            \"*Is this correct?*\" { send \"y\r\"; exp_continue }
+            eof
+        }
+        "
       env:
         ACCEPT_FDL_LICENSE: "y"
 
