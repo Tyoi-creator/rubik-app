@@ -23,7 +23,7 @@ jobs:
     - name: Install system dependencies
       run: |
         sudo apt-get update
-        # Cài đặt các công cụ biên dịch nền tảng quan trọng, bổ sung libtool-bin để sửa lỗi m4 macro
+        # Bổ sung libtool, libtool-bin và m4 để sửa lỗi biên dịch libffi
         sudo apt-get install -y \
           build-essential \
           ccache \
