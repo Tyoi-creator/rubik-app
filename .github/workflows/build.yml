@@ -32,17 +32,20 @@ jobs:
     - name: Install Latest Buildozer and Modern Cython
       run: |
         python -m pip install --upgrade pip
-        # Cài đặt phiên bản Cython mới để tương thích hoàn toàn cấu trúc hàm hệ thống
         pip install buildozer==1.6.0 cython virtualenv
 
     - name: Build APK with Buildozer
       run: |
+        # Chấp nhận bản quyền toàn bộ SDK và NDK hệ thống
         yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
         cd $GITHUB_WORKSPACE
         yes y | buildozer android debug
       env:
         ACCEPT_FDL_LICENSE: "y"
         GRADLE_OPTS: "-Dorg.gradle.welcome.provider.enabled=false"
+        # Ép biến môi trường toàn hệ thống trỏ chung về một mối
+        ANDROID_NDK_HOME: "/usr/local/lib/android/sdk/ndk/27.3.13750724"
+        ANDROID_NDK_ROOT: "/usr/local/lib/android/sdk/ndk/27.3.13750724"
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
