@@ -33,8 +33,12 @@ jobs:
         # Chấp nhận tất cả bản quyền của Android SDK hệ thống gốc trước
         yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
         
-        # Chạy trực tiếp Buildozer để đóng gói ứng dụng
-        buildozer android debug
+        # Di chuyển vào đúng thư mục chứa mã nguồn (nơi có file main.py và buildozer.spec)
+        # Lệnh này giúp khắc phục triệt để lỗi "No buildozer.spec found"
+        cd $GITHUB_WORKSPACE
+        
+        # Đút lệnh yes vào để tự động bấm Y nếu có cài thêm package gì
+        yes y | buildozer android debug
       env:
         ACCEPT_FDL_LICENSE: "y"
         GRADLE_OPTS: "-Dorg.gradle.welcome.provider.enabled=false"
