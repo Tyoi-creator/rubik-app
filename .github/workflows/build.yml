@@ -23,10 +23,17 @@ jobs:
     - name: Install system dependencies
       run: |
         sudo apt-get update
+        # Cài đặt các công cụ biên dịch nền tảng quan trọng, bổ sung libtool-bin để sửa lỗi m4 macro
         sudo apt-get install -y \
           build-essential \
           ccache \
           git \
+          libtool \
+          libtool-bin \
+          autoconf \
+          automake \
+          m4 \
+          pkg-config \
           libffi-dev \
           libssl-dev \
           libgstreamer1.0-dev \
@@ -47,10 +54,6 @@ jobs:
           libncursesw5-dev \
           unzip \
           zip \
-          autoconf \
-          automake \
-          libtool \
-          pkg-config \
           ant \
           openjdk-17-jdk
 
@@ -66,19 +69,19 @@ jobs:
         # 1. Chấp nhận các điều khoản bản quyền SDK hệ thống
         yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
         
-        # 2. Khởi tạo cấu hình nền tảng của Buildozer trước để tạo thư mục
+        # 2. Khởi tạo cấu hình nền tảng của Buildozer để tạo môi trường
         buildozer android venv || true
         
-        # 3. Ép buộc môi trường ảo nội bộ của Buildozer phải sử dụng Cython cũ nhằm tránh lỗi jnius
-        # (Đây là bước cốt lõi để sửa lỗi 'jnius' is not a valid module name)
+        # 3. Ép buộc môi trường ảo nội bộ của Buildozer sử dụng Cython tương thích
         if [ -d "~/.buildozer/android/platform/venv" ]; then
           ~/.buildozer/android/platform/venv/bin/pip install "Cython<3.0.0"
         fi
         
-        # 4. Xóa sạch cache lỗi cũ của pyjnius để hệ thống biên dịch lại từ đầu sạch sẽ
+        # 4. Xóa sạch cache của các thư viện biên dịch lỗi trước đó (gồm pyjnius và libffi)
         rm -rf .buildozer/android/platform/build-arm64-v8a_armeabi-v7a/build/other_builds/pyjnius*
+        rm -rf .buildozer/android/platform/build-arm64-v8a_armeabi-v7a/build/other_builds/libffi*
         
-        # 5. Tiến hành tự động đồng ý bản quyền và thực hiện build APK
+        # 5. Tiến hành chạy build APK chính thức
         yes y | buildozer android debug
 
     - name: Upload APK Artifact
