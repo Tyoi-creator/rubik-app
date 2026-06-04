@@ -9,7 +9,8 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # Sử dụng Ubuntu 22.04 LTS để đảm bảo các công cụ autoconf/libtool tương thích tuyệt đối với NDK
+    runs-on: ubuntu-22.04
 
     steps:
     - name: Checkout repository
@@ -20,18 +21,17 @@ jobs:
       with:
         python-version: '3.10'
 
-    - name: Install system dependencies
+    - name: Install System Dependencies & Fix Autoconf Path
       run: |
         sudo apt-get update
-        # Bổ sung libtool, libtool-bin và m4 để sửa lỗi biên dịch libffi
         sudo apt-get install -y \
           build-essential \
-          ccache \
           git \
-          libtool \
-          libtool-bin \
+          ccache \
           autoconf \
           automake \
+          libtool \
+          libtool-bin \
           m4 \
           pkg-config \
           libffi-dev \
@@ -57,31 +57,26 @@ jobs:
           ant \
           openjdk-17-jdk
 
-    - name: Install Python build tools
+        # Chuẩn hóa đường dẫn macro: Ép buộc autoconf nhận diện chính xác libtool m4
+        sudo ln -s /usr/share/aclocal/libtool.m4 /usr/share/aclocal/ltoptions.m4 /usr/share/aclocal/ltsugar.m4 /usr/share/aclocal/ltversion.m4 /usr/share/aclocal/lt~obsolete.m4 /usr/include/ || true
+
+    - name: Install Python Build Tools
       run: |
         python -m pip install --upgrade pip
         pip install "Cython<3.0.0" wheel buildozer
 
-    - name: Build APK with Buildozer
+    - name: Clean Cache and Build Android Package
       env:
         BUILDOZER_ALLOW_KIVY_NEW_DESIGN: 1
       run: |
-        # 1. Chấp nhận các điều khoản bản quyền SDK hệ thống
+        # 1. Chấp nhận các điều khoản bản quyền Android SDK
         yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
         
-        # 2. Khởi tạo cấu hình nền tảng của Buildozer để tạo môi trường
-        buildozer android venv || true
+        # 2. Xóa sạch hoàn toàn các thư mục đệm lỗi lưu trữ cục bộ từ các lần build trước
+        rm -rf .buildozer/
+        rm -rf ~/.buildozer/
         
-        # 3. Ép buộc môi trường ảo nội bộ của Buildozer sử dụng Cython tương thích
-        if [ -d "~/.buildozer/android/platform/venv" ]; then
-          ~/.buildozer/android/platform/venv/bin/pip install "Cython<3.0.0"
-        fi
-        
-        # 4. Xóa sạch cache của các thư viện biên dịch lỗi trước đó (gồm pyjnius và libffi)
-        rm -rf .buildozer/android/platform/build-arm64-v8a_armeabi-v7a/build/other_builds/pyjnius*
-        rm -rf .buildozer/android/platform/build-arm64-v8a_armeabi-v7a/build/other_builds/libffi*
-        
-        # 5. Tiến hành chạy build APK chính thức
+        # 3. Kích hoạt Buildozer biên dịch ứng dụng sạch (Clean Build)
         yes y | buildozer android debug
 
     - name: Upload APK Artifact
