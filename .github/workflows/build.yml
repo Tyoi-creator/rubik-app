@@ -15,10 +15,10 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Set up Python 3.10
+    - name: Set up Python 3.11
       uses: actions/setup-python@v5
       with:
-        python-version: '3.10'
+        python-version: '3.11'
 
     - name: Install System Dependencies
       run: |
@@ -57,26 +57,23 @@ jobs:
     - name: Install Python Build Tools
       run: |
         python -m pip install --upgrade pip
-        # Khóa cứng Cython bản thấp để tương thích hoàn toàn với Kivy gốc
+        # Khóa phiên bản Cython phù hợp với Python 3.11 và Kivy
         pip install "Cython>=0.29.33,<3.0.0" wheel buildozer
 
     - name: Total Clean Cache & Build Package
       env:
         BUILDOZER_ALLOW_KIVY_NEW_DESIGN: 1
       run: |
-        # 1. Ký bản quyền Android SDK
+        # 1. Chấp nhận các điều khoản bản quyền Android SDK
         yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
         
-        # 2. TỔNG VỆ SINH TẬN GỐC - Xóa sạch mọi thư mục cache ẩn bướng bỉnh nhất
+        # 2. Xóa sạch mọi tàn dư xung đột phiên bản cũ
         rm -rf .buildozer/
         rm -rf ~/.buildozer/
         rm -rf ./buildozer
         rm -rf ~/.local/share/buildozer
         
-        # 3. Chạy lệnh dọn dẹp sâu của chính Buildozer
-        buildozer android clean || true
-        
-        # 4. Tiến hành build mới hoàn toàn 100% từ môi trường sạch
+        # 3. Kích hoạt lệnh build sạch hoàn toàn
         yes y | buildozer android debug
 
     - name: Upload APK Artifact
