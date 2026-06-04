@@ -36,7 +36,8 @@ version = 0.1
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3==3.10.14,kivy
+# Ép cả phiên bản ứng dụng lẫn phiên bản máy chủ đồng bộ về bản 3.11 sạch
+requirements = python3==3.11.9,hostpython3==3.11.9,kivy
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
