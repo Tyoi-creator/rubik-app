@@ -15,19 +15,17 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Set up Python
+    - name: Set up Python 3.10
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
+        # Thiết lập Python này làm mặc định cho toàn bộ hệ thống Actions
+        check-latest: false
 
-    - name: Install System Dependencies (Fix Unmet Dependencies)
+    - name: Install System Dependencies
       run: |
         sudo apt-get update
-        
-        # Sửa lỗi nghẽn bằng cách cài đặt libunwind-dev trước một cách độc lập
         sudo apt-get install -y libunwind-dev
-        
-        # Cài đặt toàn bộ các công cụ biên dịch thiết yếu mà KHÔNG kèm gstreamer gây lỗi
         sudo apt-get install -y \
           build-essential \
           git \
@@ -61,20 +59,22 @@ jobs:
     - name: Install Python Build Tools
       run: |
         python -m pip install --upgrade pip
-        pip install "Cython<3.0.0" wheel buildozer
+        # Khóa cứng phiên bản Cython ổn định tương thích với Kivy
+        pip install "Cython>=0.29.33,<3.0.0" wheel buildozer
 
-    - name: Clean Cache and Build Android Package
+    - name: Clean and Build Android Package
       env:
         BUILDOZER_ALLOW_KIVY_NEW_DESIGN: 1
       run: |
         # 1. Chấp nhận các điều khoản bản quyền Android SDK
         yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
         
-        # 2. Xóa sạch hoàn toàn các thư mục đệm lỗi lưu trữ cục bộ tích tụ qua các lần build hỏng
+        # 2. Bắt buộc xóa sạch thư mục cache lỗi của Python 3.14 cũ
         rm -rf .buildozer/
         rm -rf ~/.buildozer/
         
-        # 3. Kích hoạt Buildozer biên dịch ứng dụng sạch từ đầu
+        # 3. Ép cấu hình Buildozer sử dụng đúng target Python ổn định
+        # Chạy build sạch từ đầu
         yes y | buildozer android debug
 
     - name: Upload APK Artifact
