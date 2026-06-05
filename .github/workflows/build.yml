@@ -57,23 +57,25 @@ jobs:
     - name: Install Python Build Tools
       run: |
         python -m pip install --upgrade pip
-        # Khóa phiên bản Cython phù hợp với Python 3.11 và Kivy
-        pip install "Cython>=0.29.33,<3.0.0" wheel buildozer
+        # Khóa chặt phiên bản Cython và SetupTools để tránh xung đột môi trường ảo
+        pip install "Cython>=0.29.33,<3.0.0" "setuptools<60.0.0" wheel buildozer
 
     - name: Total Clean Cache & Build Package
       env:
         BUILDOZER_ALLOW_KIVY_NEW_DESIGN: 1
+        # MẸO QUAN TRỌNG: Ép Pip trong venv không tự nâng cấp bậy bạ để tránh lỗi ImportError
+        PIP_DISABLE_PIP_VERSION_CHECK: 1
       run: |
         # 1. Chấp nhận các điều khoản bản quyền Android SDK
         yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
         
-        # 2. Xóa sạch mọi tàn dư xung đột phiên bản cũ
+        # 2. Xóa triệt để thư mục venv đang bị lỗi Import cũ
         rm -rf .buildozer/
         rm -rf ~/.buildozer/
         rm -rf ./buildozer
         rm -rf ~/.local/share/buildozer
         
-        # 3. Kích hoạt lệnh build sạch hoàn toàn
+        # 3. Tiến hành build sạch hoàn toàn
         yes y | buildozer android debug
 
     - name: Upload APK Artifact
